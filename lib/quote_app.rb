@@ -24,6 +24,10 @@ __END__
   <head>
     <title><%= @title %></title>
     <style>
+      a {
+        color:               white;
+        text-decoration:     none;
+      }
       body {
         background-color:    #659EC7;
         font-family:         sans-serif;
@@ -45,6 +49,7 @@ __END__
         background-color:    #2B547E;
         width:               100%;
         padding:             0px;
+        padding-left:        20px;
         padding-top:         20px;
         border-style:        solid;
         border-width:        0px;
@@ -70,6 +75,7 @@ __END__
       <%= yield %>
     </div>
     <div id="footer">
+      <a href="https://github.com/JoshCheek/legit-quotes">Get the source</a>
     </div>
   </body>
 </html>
