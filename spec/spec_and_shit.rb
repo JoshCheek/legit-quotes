@@ -32,6 +32,14 @@ class Internetz < Struct.new(:url)
     def content
       @response
     end
+
+    def [](*args)
+      @response[*args]
+    end
+
+    def include?(text)
+      @response.include? text
+    end
   end
 
   def get(path)
@@ -45,14 +53,16 @@ end
 
 describe 'mah app' do
   include ManageServer
-  before(:all)    { start_server port }
-  after(:all)     { stop_server  }
-  let(:internetz) { Internetz.new "http://0.0.0.0:#{port}/" }
-  let(:port)      { 8080 }
+  before(:all)             { ENV['GOOGLE_PROPERTY_ID'] = google_property_id }
+  before(:all)             { start_server port }
+  after(:all)              { stop_server  }
+  let(:internetz)          { Internetz.new "http://0.0.0.0:#{port}/" }
+  let(:port)               { 8080 }
+  let(:google_property_id) { '1oisdnv0n232ono3nv09' }
 
   it 'has some sort of cool main page' do
     response = internetz.get '/'
-    response.content.should start_with '<!DOCTYPE html>'
+    response.should start_with '<!DOCTYPE html>'
   end
 
   example '/a/b is a quote of a saying b' do
@@ -71,5 +81,9 @@ describe 'mah app' do
     response = internetz.get '/%3Cul%3E%3Cli%3Ea%3C%2Fli%3E%3C%2Ful%3E/%3Cul%3E%3Cli%3Ea%3C%2Fli%3E%3C%2Ful%3E'
     response.should have_content '"&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;"', at: '.quote'
     response.should have_content '&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;', at: '.author'
+  end
+
+  it 'has the google analytics' do
+    internetz.get('/').should include "['_setAccount', '#{google_property_id}']"
   end
 end
