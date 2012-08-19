@@ -1,7 +1,7 @@
-Some sorta quote site
----------------------
+Legit Quotes
+------------
 
-Source code for some site that I haven't figured out a name for it yet.
+Source code for [legit-quotes](http://www.legit-quotes.com/) that I haven't figured out a name for it yet.
 
 License
 -------
