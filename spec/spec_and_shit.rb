@@ -1,5 +1,5 @@
 require 'rspec/expectations'
-require 'restclient'
+require 'rest-client'
 require 'nokogiri'
 require 'rack'
 require 'webrick'
@@ -51,14 +51,20 @@ RSpec::Matchers.define :have_content do |content, options|
   match { |doc| doc.at_css(options[:at]).content == content }
 end
 
-describe 'mah app' do
+RSpec.describe 'mah app' do
   include ManageServer
   before(:all)             { ENV['GOOGLE_PROPERTY_ID'] = google_property_id }
   before(:all)             { start_server port }
   after(:all)              { stop_server  }
   let(:internetz)          { Internetz.new "http://0.0.0.0:#{port}/" }
-  let(:port)               { 8080 }
-  let(:google_property_id) { '1oisdnv0n232ono3nv09' }
+
+  def port
+    8080
+  end
+
+  def google_property_id
+    '1oisdnv0n232ono3nv09'
+  end
 
   it 'has some sort of cool main page' do
     response = internetz.get '/'
