@@ -68,28 +68,28 @@ RSpec.describe 'mah app' do
 
   it 'has some sort of cool main page' do
     response = internetz.get '/'
-    response.should start_with '<!DOCTYPE html>'
+    expect(response).to start_with '<!DOCTYPE html>'
   end
 
   example '/a/b is a quote of a saying b' do
     response = internetz.get '/a/b'
-    response.should have_content '"b"', at: '.quote'
-    response.should have_content 'a',   at: '.author'
+    expect(response).to have_content '"b"', at: '.quote'
+    expect(response).to have_content 'a',   at: '.author'
   end
 
   example 'spaces come through correctly' do
     response = internetz.get '/a%20b/b%20c'
-    response.should have_content '"b c"', at: '.quote'
-    response.should have_content 'a b',   at: '.author'
+    expect(response).to have_content '"b c"', at: '.quote'
+    expect(response).to have_content 'a b',   at: '.author'
   end
 
   it 'escapes html' do
     response = internetz.get '/%3Cul%3E%3Cli%3Ea%3C%2Fli%3E%3C%2Ful%3E/%3Cul%3E%3Cli%3Ea%3C%2Fli%3E%3C%2Ful%3E'
-    response.should have_content '"&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;"', at: '.quote'
-    response.should have_content '&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;', at: '.author'
+    expect(response).to have_content '"&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;"', at: '.quote'
+    expect(response).to have_content '&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;', at: '.author'
   end
 
   it 'has the google analytics' do
-    internetz.get('/').should include "['_setAccount', '#{google_property_id}']"
+    expect(internetz.get '/').to include "['_setAccount', '#{google_property_id}']"
   end
 end
