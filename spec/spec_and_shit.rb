@@ -2,40 +2,14 @@ require 'nokogiri'
 require 'quote_app'
 require 'rack/test'
 
-class Internetz < Struct.new(:app)
-  TestApp = Struct.new(:app) { include Rack::Test::Methods }
+Internetz = Struct.new(:app) { include Rack::Test::Methods }
 
-  def client
-    @client ||= TestApp.new app
+RSpec::Matchers.define :have_content do |expected_content, options|
+  match do |response|
+    parsed         = Nokogiri::HTML response.body
+    actual_content = parsed.at_css options.fetch(:at)
+    expect(actual_content.content).to eq expected_content
   end
-
-  def get(path)
-    Response.new client.get(path).body
-  end
-
-  class Response
-    attr_reader :body
-    def initialize(body)
-      @body = body
-      @doc = Nokogiri::HTML body
-    end
-
-    def at_css(*args)
-      @doc.at_css *args
-    end
-
-    def [](*args)
-      @body[*args]
-    end
-
-    def include?(text)
-      @body.include? text
-    end
-  end
-end
-
-RSpec::Matchers.define :have_content do |content, options|
-  match { |response| response.at_css(options[:at]).content == content }
 end
 
 RSpec.describe 'mah app' do
@@ -48,7 +22,7 @@ RSpec.describe 'mah app' do
 
   it 'has some sort of cool main page' do
     response = internetz.get '/'
-    expect(response).to start_with '<!DOCTYPE html>'
+    expect(response.body).to start_with '<!DOCTYPE html>'
   end
 
   example '/a/b is a quote of a saying b' do
@@ -82,6 +56,7 @@ RSpec.describe 'mah app' do
   end
 
   it 'has the google analytics' do
-    expect(internetz.get '/').to include "['_setAccount', '#{google_property_id}']"
+    expect(internetz.get('/').body)
+      .to include "['_setAccount', '#{google_property_id}']"
   end
 end
