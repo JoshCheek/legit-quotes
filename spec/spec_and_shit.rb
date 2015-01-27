@@ -1,66 +1,46 @@
-require 'rspec/expectations'
-require 'rest-client'
 require 'nokogiri'
-require 'rack'
-require 'webrick'
 require 'quote_app'
+require 'rack/test'
 
-module ManageServer
-  def start_server(port)
-    @server_thread = Thread.new do
-      Rack::Server.start app: QuoteApp.new, Port: port, server: 'webrick', AccessLog: [] , Logger: WEBrick::Log.new(StringIO.new)
-    end
-    sleep 2
+class Internetz < Struct.new(:app)
+  TestApp = Struct.new(:app) { include Rack::Test::Methods }
+
+  def client
+    @client ||= TestApp.new app
   end
 
-  def stop_server
-    @server_thread.kill
+  def get(path)
+    Response.new client.get(path).body
   end
-end
 
-class Internetz < Struct.new(:url)
   class Response
-    def initialize(response)
-      @response = response
-      @doc = Nokogiri::HTML response
+    attr_reader :body
+    def initialize(body)
+      @body = body
+      @doc = Nokogiri::HTML body
     end
 
     def at_css(*args)
       @doc.at_css *args
     end
 
-    def content
-      @response
-    end
-
     def [](*args)
-      @response[*args]
+      @body[*args]
     end
 
     def include?(text)
-      @response.include? text
+      @body.include? text
     end
-  end
-
-  def get(path)
-    Response.new RestClient.get(url + path)
   end
 end
 
 RSpec::Matchers.define :have_content do |content, options|
-  match { |doc| doc.at_css(options[:at]).content == content }
+  match { |response| response.at_css(options[:at]).content == content }
 end
 
 RSpec.describe 'mah app' do
-  include ManageServer
-  before(:all)             { ENV['GOOGLE_PROPERTY_ID'] = google_property_id }
-  before(:all)             { start_server port }
-  after(:all)              { stop_server  }
-  let(:internetz)          { Internetz.new "http://0.0.0.0:#{port}/" }
-
-  def port
-    8080
-  end
+  before(:all)    { ENV['GOOGLE_PROPERTY_ID'] = google_property_id }
+  let(:internetz) { Internetz.new QuoteApp }
 
   def google_property_id
     '1oisdnv0n232ono3nv09'
@@ -83,10 +63,22 @@ RSpec.describe 'mah app' do
     expect(response).to have_content 'a b',   at: '.author'
   end
 
+  def http_escape(str)
+    str.bytes.map { |byte| sprintf '%%%02x', byte }.join('')
+  end
+
   it 'escapes html' do
-    response = internetz.get '/%3Cul%3E%3Cli%3Ea%3C%2Fli%3E%3C%2Ful%3E/%3Cul%3E%3Cli%3Ea%3C%2Fli%3E%3C%2Ful%3E'
-    expect(response).to have_content '"&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;"', at: '.quote'
-    expect(response).to have_content '&lt;ul&gt;&lt;li&gt;a&lt;/li&gt;&lt;/ul&gt;', at: '.author'
+    author_html  = '<zomg>'
+    quote_html   = '<wat>'
+    escaped_path = "/#{http_escape author_html}/#{http_escape quote_html}"
+    response     = internetz.get escaped_path
+
+    # ie will not affect the HTML it is in, but does display correctly
+    expect(response.body).to     include '"&lt;wat&gt;"'
+    expect(response.body).to_not include '"<wat>"'
+
+    expect(response.body).to     include '&lt;zomg&gt;'
+    expect(response.body).to_not include '<zomg>'
   end
 
   it 'has the google analytics' do

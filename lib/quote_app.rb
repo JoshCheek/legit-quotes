@@ -100,5 +100,5 @@ __END__
 <p>Totally for real actual quotes.</p>
 
 @@template
-<p class="quote">"<%= h @quote %>"</p>
-<p class="author"><%= h @author %></p>
+<p class="quote">"<%= @quote %>"</p>
+<p class="author"><%= @author %></p>
