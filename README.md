@@ -1,7 +1,9 @@
 Legit Quotes
 ------------
 
-Source code for [legit-quotes](http://www.legit-quotes.com/) that I haven't figured out a name for it yet.
+Source code for [legit-quotes](https://legit-quotes.herokuapp.com).
+I own a domain name for it, but it's complicated:
+[https://twitter.com/josh_cheek/status/1095725518668918784](https://twitter.com/josh_cheek/status/1095725518668918784)
 
 License
 -------
